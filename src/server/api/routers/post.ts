@@ -15,24 +15,27 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
-  getSecretMessage: protectedProcedure.query(() => {
-    return "you can now see this secret message!";
-  }),
-  
-  // Example user stats query
-  getUserStats: protectedProcedure.query(async ({ ctx }) => {
-    const user = await ctx.db.user.findUnique({
-      where: { id: ctx.session.user.id },
-      select: {
-        rank: true,
-        problemsSolved: true,
-        streakCount: true,
-        arenaWins: true,
-        arenaLosses: true,
-        arenaRating: true,
-      },
+  create: protectedProcedure
+    .input(z.object({ name: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.post.create({
+        data: {
+          name: input.name,
+          createdBy: { connect: { id: ctx.session.user.id } },
+        },
+      });
+    }),
+
+  getLatest: protectedProcedure.query(async ({ ctx }) => {
+    const post = await ctx.db.post.findFirst({
+      orderBy: { createdAt: "desc" },
+      where: { createdBy: { id: ctx.session.user.id } },
     });
 
-    return user;
+    return post ?? null;
+  }),
+
+  getSecretMessage: protectedProcedure.query(() => {
+    return "you can now see this secret message!";
   }),
 });

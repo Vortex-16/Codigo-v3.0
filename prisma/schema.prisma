@@ -1,162 +1,177 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
     provider = "prisma-client-js"
-    output   = "../generated/prisma"
 }
 
 datasource db {
-    provider = "mongodb"
+    provider = "sqlite"
     url      = env("DATABASE_URL")
 }
 
-// NextAuth Models (MongoDB compatible)
+model User {
+    id            String    @id
+    name          String
+    email         String?   @unique
+    image         String?
+    
+    // Game Stats
+    rank          Int       @default(0)
+    contestsCount Int       @default(0)
+    streakCount   Int       @default(0)
+    isAdmin       Boolean   @default(false)
+    
+    // Problem Solving Stats
+    problemsSolved Int       @default(0)
+    easyCount      Int       @default(0)
+    mediumCount    Int       @default(0)
+    hardCount      Int       @default(0)
+    realWorldCount Int       @default(0)
+    lastSolvedDate DateTime?
+    
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
+
+    submissions           Submission[]
+    solvedProblems       UserProblemSolved[]
+    
+    // Arena Relations
+    arenaMatchesAsPlayer1 ArenaMatch[] @relation("Player1")
+    arenaMatchesAsPlayer2 ArenaMatch[] @relation("Player2")
+    wonMatches           ArenaMatch[] @relation("Winner")
+    
+    // Auth relations (if using NextAuth adapter, although Clerk was used in v2)
+    // We'll keep these compatible with NextAuth default schema just in case
+    accounts      Account[]
+    sessions      Session[]
+}
+
+// NextAuth Models (Standard)
 model Account {
-    id                       String  @id @default(auto()) @map("_id") @db.ObjectId
-    userId                   String  @db.ObjectId
-    type                     String
-    provider                 String
-    providerAccountId        String
-    refresh_token            String?
-    access_token             String?
-    expires_at               Int?
-    token_type               String?
-    scope                    String?
-    id_token                 String?
-    session_state            String?
-    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-    refresh_token_expires_in Int?
+    id                String  @id @default(cuid())
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? 
+    access_token      String? 
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? 
+    session_state     String?
+    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([provider, providerAccountId])
-    @@map("accounts")
 }
 
 model Session {
-    id           String   @id @default(auto()) @map("_id") @db.ObjectId
+    id           String   @id @default(cuid())
     sessionToken String   @unique
-    userId       String   @db.ObjectId
+    userId       String
     expires      DateTime
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-    @@map("sessions")
-}
-
-model User {
-    id            String    @id @default(auto()) @map("_id") @db.ObjectId
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    
-    // CodeBattle Arena specific fields
-    rank              Int      @default(0)
-    contestsCount     Int      @default(0)
-    streakCount       Int      @default(0)
-    lastSolvedDate    DateTime?
-    problemsSolved    Int      @default(0)
-    easyCount         Int      @default(0)
-    mediumCount       Int      @default(0)
-    hardCount         Int      @default(0)
-    realWorldCount    Int      @default(0)
-    
-    // Arena stats
-    arenaWins         Int      @default(0)
-    arenaLosses       Int      @default(0)
-    arenaTotalMatches Int      @default(0)
-    arenaRating       Int      @default(1000)
-    arenaWinStreak    Int      @default(0)
-    arenaBestStreak   Int      @default(0)
-    
-    accounts          Account[]
-    sessions          Session[]
-    solvedProblems    SolvedProblem[]
-    player1Matches    ArenaMatch[] @relation("player1Matches")
-    player2Matches    ArenaMatch[] @relation("player2Matches")
-    
-    @@map("users")
 }
 
 model VerificationToken {
-    id         String   @id @default(auto()) @map("_id") @db.ObjectId
     identifier String
     token      String   @unique
     expires    DateTime
 
     @@unique([identifier, token])
-    @@map("verification_tokens")
 }
 
-// CodeBattle Arena Models
+// Application Models
+
 model Problem {
-    id          String   @id @default(auto()) @map("_id") @db.ObjectId
-    problemId   String   @unique
+    id          String   @id @default(cuid())
     title       String
     description String
-    difficulty  String
+    difficulty  String   // 'easy', 'medium', 'hard', 'real-world'
     category    String
-    timeLimit   Int      @default(300) // seconds
-    testCases   Json     // Array of test cases
-    starterCode Json     // Starter code for different languages
-    solution    String?  // Optional solution
-    hints       Json?    // Optional hints array
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
+    tags        String   // Stored as JSON string or CSV
+    constraints String
     
-    solvedBy    SolvedProblem[]
+    timeLimit   Int      @default(5000)
+    memoryLimit Int      @default(256)
     
-    @@map("problems")
+    examples    String   // Stored as JSON string
+    hints       String   // Stored as JSON string
+    
+    solvedCount  Int     @default(0)
+    attemptCount Int     @default(0)
+    
+    testCases    TestCase[]
+    submissions  Submission[]
+    solvedBy     UserProblemSolved[]
+    
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
 }
 
-model SolvedProblem {
-    id         String   @id @default(auto()) @map("_id") @db.ObjectId
-    userId     String   @db.ObjectId
-    problemId  String   @db.ObjectId
-    difficulty String
-    language   String
-    code       String
-    solvedAt   DateTime @default(now())
+model TestCase {
+    id             String  @id @default(cuid())
+    problemId      String
+    problem        Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+    input          String
+    expectedOutput String
+    isHidden       Boolean @default(false)
+}
+
+model Submission {
+    id              String   @id @default(cuid())
+    userId          String
+    user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    problemId       String
+    problem         Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
     
-    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    problem    Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+    code            String
+    language        String
+    status          String   // 'accepted', 'wrong_answer', etc.
     
+    executionTime   Float?
+    memoryUsed      Float?
+    testCasesPassed Int?
+    totalTestCases  Int?
+    
+    submittedAt     DateTime @default(now())
+}
+
+model UserProblemSolved {
+    id              String   @id @default(cuid())
+    userId          String
+    user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    problemId       String
+    problem         Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+    
+    difficulty      String
+    category        String
+    bestSubmissionId String
+    firstSolvedAt   DateTime @default(now())
+    totalAttempts   Int      @default(1)
+
     @@unique([userId, problemId])
-    @@map("solved_problems")
 }
 
 model ArenaMatch {
-    id          String   @id @default(auto()) @map("_id") @db.ObjectId
-    matchId     String   @unique
-    player1Id   String   @db.ObjectId
-    player2Id   String   @db.ObjectId
-    difficulty  String
-    status      String   @default("waiting") // waiting, ready, active, completed, abandoned
-    winnerId    String?  @db.ObjectId
+    id        String   @id @default(cuid())
+    status    String   @default("waiting") // waiting, in_progress, completed, abandoned
     
-    player1Score     Int      @default(0)
-    player2Score     Int      @default(0)
-    player1Progress  Int      @default(0)
-    player2Progress  Int      @default(0)
+    player1Id String
+    player1   User     @relation("Player1", fields: [player1Id], references: [id])
+    player1Score Int   @default(0)
     
-    problems    Json     // Array of problem IDs
-    results     Json?    // Match results/history
+    player2Id String
+    player2   User     @relation("Player2", fields: [player2Id], references: [id])
+    player2Score Int   @default(0)
     
-    createdAt   DateTime @default(now())
-    startedAt   DateTime?
-    completedAt DateTime?
+    winnerId  String?
+    winner    User?    @relation("Winner", fields: [winnerId], references: [id])
     
-    player1     User     @relation(fields: [player1Id], references: [id], name: "player1Matches")
-    player2     User     @relation(fields: [player2Id], references: [id], name: "player2Matches")
+    // Store questions and their states as JSON string for simplicity in SQLite 
+    // vs complexity of many relational tables for a transient game state
+    questionsState String? // JSON string containing questions, submissions, current index, etc.
     
-    @@map("arena_matches")
-}
-
-model ArenaQueue {
-    id         String   @id @default(auto()) @map("_id") @db.ObjectId
-    userId     String   @db.ObjectId
-    username   String
-    difficulty String
-    joinedAt   DateTime @default(now())
-    
-    @@map("arena_queue")
+    createdAt DateTime @default(now())
+    startedAt DateTime?
+    endedAt   DateTime?
 }
