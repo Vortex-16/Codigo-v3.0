@@ -1,7 +1,10 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Star } from "lucide-react";
+import { useRef } from "react";
+import { Star, ArrowRight } from "lucide-react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 
 const testimonials = [
     {
@@ -28,10 +31,33 @@ const testimonials = [
 ];
 
 export const TestimonialsSection = () => {
+    const sectionRef = useRef<HTMLDivElement>(null);
+
+    useGSAP(() => {
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: sectionRef.current,
+                start: "top 80%",
+                toggleActions: "play none none none",
+            }
+        });
+
+        tl.fromTo(".test-header",
+            { y: 40, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }
+        )
+            .fromTo(".testimonial-card",
+                { y: 60, opacity: 0 },
+                { y: 0, opacity: 1, stagger: 0.2, duration: 0.8, ease: "back.out(1.2)" },
+                "-=0.4"
+            );
+
+    }, { scope: sectionRef });
+
     return (
-        <section id="testimonials" className="py-24 bg-[#0a0a0a]">
+        <section ref={sectionRef} id="testimonials" className="py-24 bg-[#0a0a0a]">
             <div className="container mx-auto px-6">
-                <div className="mb-16 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+                <div className="test-header mb-16 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
                     <h2 className="text-4xl font-bold text-white">
                         Why <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Developers</span> <br />
                         Love CodiGo
@@ -40,21 +66,17 @@ export const TestimonialsSection = () => {
                         <p className="text-gray-400 mb-4 text-sm">
                             From startups to Fortune 500s, developers are switching to CodiGo for a better coding experience.
                         </p>
-                        <button className="rounded-full bg-purple-600/10 px-6 py-2.5 text-sm font-medium text-purple-400 transition-colors hover:bg-purple-600/20">
-                            Join Them →
+                        <button className="rounded-full bg-purple-600/10 px-6 py-2.5 text-sm font-medium text-purple-400 transition-colors hover:bg-purple-600/20 hover:scale-105 active:scale-95 duration-200 flex items-center ml-auto">
+                            Join Them <ArrowRight className="ml-2 h-4 w-4" />
                         </button>
                     </div>
                 </div>
 
                 <div className="grid gap-8 md:grid-cols-3">
                     {testimonials.map((testimonial, index) => (
-                        <motion.div
+                        <div
                             key={index}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.5, delay: index * 0.1 }}
-                            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#111] p-8 transition-all hover:border-white/20"
+                            className="testimonial-card group relative overflow-hidden rounded-2xl border border-white/10 bg-[#111] p-8 transition-all hover:border-white/20 hover:-translate-y-2 hover:shadow-xl hover:shadow-purple-900/10"
                         >
                             <div className="mb-4 flex text-yellow-500">
                                 {[...Array(5)].map((_, i) => (
@@ -65,7 +87,7 @@ export const TestimonialsSection = () => {
                                 "{testimonial.content}"
                             </p>
                             <div className="flex items-center gap-4">
-                                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${testimonial.color} font-bold text-white`}>
+                                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${testimonial.color} font-bold text-white shadow-lg`}>
                                     {testimonial.avatar}
                                 </div>
                                 <div>
@@ -73,7 +95,7 @@ export const TestimonialsSection = () => {
                                     <div className="text-sm text-gray-500">{testimonial.role}</div>
                                 </div>
                             </div>
-                        </motion.div>
+                        </div>
                     ))}
                 </div>
             </div>

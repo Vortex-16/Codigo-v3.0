@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { Code2 } from "lucide-react";
 
 export const Navbar = () => {
     return (
@@ -8,7 +8,9 @@ export const Navbar = () => {
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
                     <div className="flex items-center gap-2">
-                        <Image src="/Logo.svg" alt="Codigo Logo" width={32} height={32} className="h-8 w-8" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+                            <Code2 className="h-5 w-5 text-white" />
+                        </div>
                         <span className="text-xl font-bold tracking-tight text-white">CODIGO</span>
                     </div>
                 </Link>

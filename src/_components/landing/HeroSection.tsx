@@ -1,92 +1,95 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
 import { CodePreview } from "./CodePreview";
-import { motion } from "framer-motion";
+import { AnimeGridBackground } from "./AnimeGridBackground";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
 
 export const HeroSection = () => {
-    return (
-        <section className="relative overflow-hidden pt-32 pb-20 lg:pt-48 lg:pb-32">
-            <div className="container mx-auto px-6">
-                <div className="grid items-center gap-12 lg:grid-cols-12">
-                    {/* Left Column: Text Content */}
-                    <div className="col-span-12 lg:col-span-5">
-                        <motion.h1
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5 }}
-                            className="mb-6 text-5xl font-extrabold leading-tight tracking-tight text-white lg:text-7xl"
-                        >
-                            Code <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Smarter</span>
-                            <br />
-                            Not Harder
-                        </motion.h1>
-                        <motion.p
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.1 }}
-                            className="mb-8 text-lg text-gray-400 lg:text-xl"
-                        >
-                            A powerful AI-powered coding platform where you can build, collaborate, and compete with detailed efficiency.
-                        </motion.p>
+    const heroRef = useRef<HTMLDivElement>(null);
 
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.2 }}
-                            className="flex flex-wrap items-center gap-4"
-                        >
+    useGSAP(() => {
+        const tl = gsap.timeline();
+
+        // Reveal Text cleanly - using fromTo for stability
+        tl.fromTo(".hero-content > *",
+            { y: 30, opacity: 0 },
+            {
+                y: 0,
+                opacity: 1,
+                duration: 1,
+                stagger: 0.1,
+                ease: "power3.out"
+            }
+        );
+
+    }, { scope: heroRef });
+
+    return (
+        <section ref={heroRef} className="relative w-full h-screen flex flex-col justify-center overflow-hidden">
+            <AnimeGridBackground />
+
+            <div className="container mx-auto px-6 z-10">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+
+                    {/* Left Column: Text Content - Perfectly Aligned Left */}
+                    <div className="hero-content flex flex-col justify-center text-left">
+                        <div className="inline-flex items-center gap-2 self-start rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-blue-400 mb-6 backdrop-blur-md">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                            </span>
+                            v3.0 Now Available
+                        </div>
+
+                        <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-white mb-6 leading-[1.1]">
+                            Code Smarter <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4f46e5] to-[#ec4899]">
+                                Not Harder.
+                            </span>
+                        </h1>
+
+                        <p className="text-lg text-gray-400 mb-8 max-w-lg leading-relaxed">
+                            Experience the future of coding with our AI-powered platform.
+                            Build, analyze, and compete with precision tools designed for
+                            modern developers.
+                        </p>
+
+                        <div className="flex flex-wrap items-center gap-4">
                             <Link
                                 href="/signup"
-                                className="group relative overflow-hidden rounded-full bg-gradient-to-r from-blue-600 to-blue-500 px-8 py-3.5 text-base font-semibold text-white shadow-xl shadow-blue-500/20 transition-all hover:shadow-blue-500/40"
+                                className="group relative overflow-hidden rounded-full bg-white px-8 py-3.5 text-base font-semibold text-black transition-transform hover:scale-105 active:scale-95"
                             >
-                                <span className="relative z-10 flex items-center gap-2">
-                                    Start Coding Now
-                                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </span>
+                                Get Started Free
                             </Link>
                             <Link
-                                href="/how-it-works"
-                                className="rounded-full border border-white/20 px-8 py-3.5 text-base font-semibold text-white transition-all hover:bg-white/5"
+                                href="/demo"
+                                className="rounded-full border border-white/20 px-8 py-3.5 text-base font-medium text-white transition-all hover:bg-white/10"
                             >
-                                See How It works
+                                View Demo
                             </Link>
-                        </motion.div>
+                        </div>
 
-                        {/* Stats */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.5, delay: 0.4 }}
-                            className="mt-16 grid grid-cols-3 gap-8 border-t border-white/10 pt-8"
-                        >
-                            <div>
-                                <div className="text-3xl font-bold text-white">200+</div>
-                                <div className="text-sm text-gray-400">Active Users</div>
+                        <div className="mt-12 flex items-center gap-8 text-sm font-medium text-gray-500">
+                            <div className="flex items-center gap-2">
+                                <div className="h-1 w-1 rounded-full bg-gray-500" />
+                                <span>No credit card required</span>
                             </div>
-                            <div>
-                                <div className="text-3xl font-bold text-white">750+</div>
-                                <div className="text-sm text-gray-400">Solutions</div>
+                            <div className="flex items-center gap-2">
+                                <div className="h-1 w-1 rounded-full bg-gray-500" />
+                                <span>14-day free trial</span>
                             </div>
-                            <div>
-                                <div className="text-3xl font-bold text-white">10+</div>
-                                <div className="text-sm text-gray-400">Languages</div>
-                            </div>
-                        </motion.div>
+                        </div>
                     </div>
 
-                    {/* Right Column: Visuals */}
-                    <div className="relative col-span-12 lg:col-span-7">
+                    {/* Right Column: Visuals - Perfectly Aligned Right */}
+                    <div className="relative flex justify-center lg:justify-end">
                         <CodePreview />
                     </div>
                 </div>
             </div>
-
-            {/* Background Glows */}
-            <div className="pointer-events-none absolute left-0 top-0 -z-10 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-600/20 blur-[100px]" />
-            <div className="pointer-events-none absolute right-0 bottom-0 -z-10 h-[500px] w-[500px] translate-x-1/3 translate-y-1/3 rounded-full bg-purple-600/20 blur-[100px]" />
         </section>
     );
 };

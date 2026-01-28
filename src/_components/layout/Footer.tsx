@@ -1,17 +1,47 @@
+"use client";
+
 import Link from "next/link";
-import Image from "next/image";
-import { Twitter, Instagram, Linkedin, Github } from "lucide-react";
+import { Twitter, Instagram, Linkedin, Github, Code2 } from "lucide-react";
+import { useRef } from "react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 
 export const Footer = () => {
+    const footerRef = useRef<HTMLElement>(null);
+
+    useGSAP(() => {
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: footerRef.current,
+                start: "top 90%",
+                toggleActions: "play none none none",
+            }
+        });
+
+        tl.fromTo(".footer-col",
+            { y: 30, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: "power2.out" }
+        )
+            .fromTo(".footer-bottom",
+                { opacity: 0 },
+                { opacity: 1, duration: 1, ease: "power2.out" },
+                "-=0.4"
+            );
+
+    }, { scope: footerRef });
+
     return (
-        <footer className="border-t border-white/10 bg-[#050505] pt-16 pb-8">
+        <footer ref={footerRef} className="border-t border-white/10 bg-[#050505] pt-16 pb-8">
             <div className="container mx-auto px-6">
                 <div className="grid gap-12 lg:grid-cols-4">
                     {/* Brand */}
-                    <div className="lg:col-span-1">
+                    <div className="footer-col lg:col-span-1">
                         <Link href="/" className="flex items-center gap-2 mb-6">
                             <div className="flex items-center gap-2">
-                                <Image src="/Logo.svg" alt="Codigo Logo" width={32} height={32} className="h-8 w-8" />
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+                                    <Code2 className="h-5 w-5 text-white" />
+                                </div>
                                 <span className="text-xl font-bold tracking-tight text-white">CODIGO</span>
                             </div>
                         </Link>
@@ -26,7 +56,7 @@ export const Footer = () => {
                     </div>
 
                     {/* Links */}
-                    <div>
+                    <div className="footer-col">
                         <h4 className="font-bold text-white mb-6">Product</h4>
                         <ul className="space-y-4 text-sm text-gray-500">
                             <li><Link href="#" className="hover:text-blue-400">Features</Link></li>
@@ -36,7 +66,7 @@ export const Footer = () => {
                         </ul>
                     </div>
 
-                    <div>
+                    <div className="footer-col">
                         <h4 className="font-bold text-white mb-6">Resources</h4>
                         <ul className="space-y-4 text-sm text-gray-500">
                             <li><Link href="#" className="hover:text-blue-400">Documentation</Link></li>
@@ -46,7 +76,7 @@ export const Footer = () => {
                         </ul>
                     </div>
 
-                    <div>
+                    <div className="footer-col">
                         <h4 className="font-bold text-white mb-6">Company</h4>
                         <ul className="space-y-4 text-sm text-gray-500">
                             <li><Link href="#" className="hover:text-blue-400">About Us</Link></li>
@@ -57,7 +87,7 @@ export const Footer = () => {
                     </div>
                 </div>
 
-                <div className="mt-16 border-t border-white/10 pt-8 flex flex-col items-center justify-between gap-4 md:flex-row">
+                <div className="footer-bottom mt-16 border-t border-white/10 pt-8 flex flex-col items-center justify-between gap-4 md:flex-row">
                     <p className="text-xs text-gray-600">
                         © 2026 CodiGo Inc. All rights reserved.
                     </p>
